@@ -94,8 +94,30 @@ export class OrderService {
 				StatusCodes.CREATED,
 			);
 		} catch (ex) {
-			const errorMessage = `Error importing orders: ${(ex as Error).message}`;
+			const error = ex as any;
+			const errorMessage = `Error importing orders: ${error.message || error}`;
 			console.error(errorMessage);
+
+			// Check for MongoDB duplicate key error (can be in different formats)
+			const errorString = error.message || error.toString() || JSON.stringify(error);
+
+			if (errorString.includes('E11000') && errorString.includes('order_id')) {
+				return ServiceResponse.failure(
+					"Duplicate order IDs found. Each order must have a unique order_id. Please check your CSV file for duplicate entries or remove existing data first.",
+					{ success: false, recordsImported: 0, message: "Duplicate order IDs detected" },
+					StatusCodes.BAD_REQUEST,
+				);
+			}
+
+			// Check for other MongoDB duplicate key errors
+			if (errorString.includes('E11000')) {
+				return ServiceResponse.failure(
+					"Duplicate data detected. Please ensure all order IDs and other unique fields are unique.",
+					{ success: false, recordsImported: 0, message: "Duplicate data detected" },
+					StatusCodes.BAD_REQUEST,
+				);
+			}
+
 			return ServiceResponse.failure(
 				"An error occurred while importing orders",
 				{ success: false, recordsImported: 0, message: "Import failed" },

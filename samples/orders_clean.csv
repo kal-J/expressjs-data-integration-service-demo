@@ -1,0 +1,5 @@
+order_id,customer_id,product_name,amount,order_date,status
+101,1,Laptop,999.99,2024-05-01,completed
+102,1,Mouse,29.99,2024-05-15,completed
+103,2,Keyboard,79.99,2024-06-01,pending
+104,3,Headphones,149.50,2024-06-10,shipped

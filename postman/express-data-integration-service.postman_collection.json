@@ -23,8 +23,13 @@
         },
         "url": {
           "raw": "{{baseUrl}}/upload/customers",
-          "host": ["{{baseUrl}}"],
-          "path": ["upload", "customers"]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "upload",
+            "customers"
+          ]
         }
       }
     },
@@ -45,8 +50,13 @@
         },
         "url": {
           "raw": "{{baseUrl}}/upload/orders",
-          "host": ["{{baseUrl}}"],
-          "path": ["upload", "orders"]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "upload",
+            "orders"
+          ]
         }
       }
     },
@@ -57,8 +67,14 @@
         "header": [],
         "url": {
           "raw": "{{baseUrl}}/customers/1/summary",
-          "host": ["{{baseUrl}}"],
-          "path": ["customers", "1", "summary"]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "customers",
+            "1",
+            "summary"
+          ]
         }
       }
     },
@@ -69,8 +85,13 @@
         "header": [],
         "url": {
           "raw": "{{baseUrl}}/reports/customer-orders",
-          "host": ["{{baseUrl}}"],
-          "path": ["reports", "customer-orders"]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "reports",
+            "customer-orders"
+          ]
         }
       }
     },
@@ -81,8 +102,13 @@
         "header": [],
         "url": {
           "raw": "{{baseUrl}}/reports/customer-orders?country=USA&minSpent=500",
-          "host": ["{{baseUrl}}"],
-          "path": ["reports", "customer-orders"],
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "reports",
+            "customer-orders"
+          ],
           "query": [
             {
               "key": "country",
@@ -100,8 +126,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080/api"
+      "value": "http://localhost:8011/api"
     }
   ]
 }
-

@@ -25,6 +25,10 @@ Create a `.env` file (or otherwise provide env vars) with at least:
 
 - **`MONGODB_URI`**: connection string for the main database.
 - **`MONGODB_URI_TEST`**: connection string for the test database.
+- **`MONGODB_USERNAME`**: MongoDB username (default: `admin`).
+- **`MONGODB_PASSWORD`**: MongoDB password (default: `password`).
+- **`MONGODB_DATABASE`**: main database name (default: `ecommerce-db`).
+- **`MONGODB_DATABASE_TEST`**: test database name (default: `test-db`).
 - **`PORT`**: HTTP port for the API (e.g. `8011`).
 - **`HOST`**: host/interface to bind (e.g. `0.0.0.0`).
 - **`CORS_ORIGIN`**: allowed CORS origin(s), e.g. `http://localhost:3000` or `*`.
@@ -48,7 +52,8 @@ The API will be available at `http://localhost:<PORT>/api` and Swagger UI at `ht
 
 This repo includes a `docker-compose.yml` that starts:
 
-- **`mongo`**: MongoDB 7 running as a **single-node replica set** (`rs0`) suitable for transactions.
+- **`mongo`**: MongoDB 7 running as a single-node replica set with authentication enabled.
+- **`mongo-init-replica`**: Initializes the replica set configuration.
 - **`api`**: The Express API container built from `Dockerfile`.
 
 Start the stack:
@@ -63,10 +68,10 @@ By default:
 - Swagger UI: `http://localhost:8011/api-docs`
 - MongoDB: `mongodb://localhost:27017`
 
-Replica-set–aware URIs used by the API:
+MongoDB URIs with authentication used by the API:
 
-- `MONGODB_URI=mongodb://mongo:27017/express-data-integration?replicaSet=rs0`
-- `MONGODB_URI_TEST=mongodb://mongo:27017/express-data-integration-test?replicaSet=rs0`
+- `MONGODB_URI=mongodb://admin:password@mongo:27017/ecommerce-db?authSource=admin`
+- `MONGODB_URI_TEST=mongodb://admin:password@mongo:27017/test-db?authSource=admin`
 
 ## API surface
 
@@ -75,10 +80,12 @@ Replica-set–aware URIs used by the API:
 - **`POST /api/upload/customers`**
   - Form-data upload with key `file` containing a `customers_sample.csv` file.
   - Imports customer records into MongoDB.
+  - **Error Handling**: Provides specific error messages for duplicate customer IDs and validation failures.
 
 - **`POST /api/upload/orders`**
   - Form-data upload with key `file` containing an `orders_sample.csv` file.
   - Imports order records into MongoDB.
+  - **Error Handling**: Provides specific error messages for duplicate order IDs and validation failures.
 
 ### Reporting endpoints
 
@@ -130,7 +137,8 @@ pnpm test:cov
 ### Transaction handling
 
 - A helper `withTransaction` in [`src/common/utils/withTransaction.ts`](src/common/utils/withTransaction.ts) wraps operations in a MongoDB transaction using `mongoose.startSession()` and `session.withTransaction(...)`.
-- CSV import services (`CustomerService.importFromCSV`, `OrderService.importFromCSV`) use this helper so bulk inserts are transactional when MongoDB is running as a replica set (as configured in `docker-compose.yml`).
+- CSV import services (`CustomerService.importFromCSV`, `OrderService.importFromCSV`) use this helper to ensure data consistency during bulk import operations.
+- MongoDB runs as a single-node replica set in both development and production to enable transaction support.
 
 ## Database & indexing
 

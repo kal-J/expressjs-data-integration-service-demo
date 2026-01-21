@@ -3,10 +3,11 @@ import { ServiceResponse } from "@/common/utils/serviceResponse";
 import { parseCSV } from "@/common/utils/csvParser";
 import { withTransaction } from "@/common/utils/withTransaction";
 import { customerRepository, type ICustomerRepository } from "./customerRepository";
+import type { ICustomer } from "./customerModel";
 import type { CustomerUploadResponseDTO } from "./dto/customer.dto";
 
 export class CustomerService {
-	constructor(private readonly repository: ICustomerRepository) {}
+	constructor(private readonly repository: ICustomerRepository) { }
 
 	async importFromCSV(buffer: Buffer): Promise<ServiceResponse<CustomerUploadResponseDTO>> {
 		try {
@@ -86,8 +87,30 @@ export class CustomerService {
 				StatusCodes.CREATED,
 			);
 		} catch (ex) {
-			const errorMessage = `Error importing customers: ${(ex as Error).message}`;
+			const error = ex as any;
+			const errorMessage = `Error importing customers: ${error.message || error}`;
 			console.error(errorMessage);
+
+			// Check for MongoDB duplicate key error (can be in different formats)
+			const errorString = error.message || error.toString() || JSON.stringify(error);
+
+			if (errorString.includes('E11000') && errorString.includes('customer_id')) {
+				return ServiceResponse.failure(
+					"Duplicate customer IDs found. Each customer must have a unique customer_id. Please check your CSV file for duplicate entries or remove existing data first.",
+					{ success: false, recordsImported: 0, message: "Duplicate customer IDs detected" },
+					StatusCodes.BAD_REQUEST,
+				);
+			}
+
+			// Check for other MongoDB duplicate key errors
+			if (errorString.includes('E11000')) {
+				return ServiceResponse.failure(
+					"Duplicate data detected. Please ensure all customer IDs and other unique fields are unique.",
+					{ success: false, recordsImported: 0, message: "Duplicate data detected" },
+					StatusCodes.BAD_REQUEST,
+				);
+			}
+
 			return ServiceResponse.failure(
 				"An error occurred while importing customers",
 				{ success: false, recordsImported: 0, message: "Import failed" },
@@ -96,7 +119,7 @@ export class CustomerService {
 		}
 	}
 
-	async findById(customerId: number): Promise<ServiceResponse<unknown | null>> {
+	async findById(customerId: number): Promise<ServiceResponse<ICustomer | null>> {
 		try {
 			const customer = await this.repository.findById(customerId);
 			if (!customer) {
@@ -114,7 +137,7 @@ export class CustomerService {
 		}
 	}
 
-	async findByCountry(country: string): Promise<ServiceResponse<unknown[]>> {
+	async findByCountry(country: string): Promise<ServiceResponse<ICustomer[]>> {
 		try {
 			const customers = await this.repository.findByCountry(country);
 			return ServiceResponse.success("Customers found", customers);

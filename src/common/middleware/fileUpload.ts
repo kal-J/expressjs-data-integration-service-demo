@@ -1,4 +1,5 @@
 import multer, { type FileFilterCallback } from "multer";
+import type { RequestHandler } from "express";
 
 const CSV_MIME_TYPE = "text/csv";
 const CSV_EXTENSION = ".csv";
@@ -22,6 +23,6 @@ const upload = multer({
 	},
 });
 
-const uploadSingleCSV = upload.single("file");
+const uploadSingleCSV: RequestHandler = upload.single("file");
 
 export { uploadSingleCSV };

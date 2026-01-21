@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { apiRouter } from "@/api/router";
 import { connectToMongoDB } from "@/common/config/mongodb.config";
 import { env } from "@/common/utils/envConfig";
@@ -13,6 +14,11 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Register API router
 app.use("/api", apiRouter);
+
+// 404 handler for unmatched routes
+app.use((_req, res) => {
+	res.status(404).send("Not Found");
+});
 
 app.use((req, _res, next) => {
 	const { method, url } = req;

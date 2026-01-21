@@ -41,8 +41,10 @@ services:
       NODE_ENV: development
       HOST: 0.0.0.0
       PORT: ${PORT:-8011}
-      MONGODB_URI: "mongodb://mongo:27017/express-data-integration?replicaSet=rs0"
-      MONGODB_URI_TEST: "mongodb://mongo:27017/express-data-integration-test?replicaSet=rs0"
+      MONGODB_URI: "mongodb://mongo:27017/${MONGODB_DATABASE:-ecommerce-db}?replicaSet=rs0"
+      MONGODB_URI_TEST: "mongodb://mongo:27017/${MONGODB_DATABASE_TEST:-test-db}?replicaSet=rs0"
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-ecommerce-db}
+      MONGODB_DATABASE_TEST: ${MONGODB_DATABASE_TEST:-test-db}
       CORS_ORIGIN: "*"
     ports:
       - "${PORT:-8011}:${PORT:-8011}"

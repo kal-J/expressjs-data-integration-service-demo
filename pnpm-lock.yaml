@@ -50,6 +50,9 @@ importers:
       pino-http:
         specifier: 10.5.0
         version: 10.5.0
+      pino-pretty:
+        specifier: 13.1.1
+        version: 13.1.1
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -84,9 +87,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: 3.2.4
         version: 3.2.4(vitest@3.2.4(@types/node@24.0.13)(tsx@4.20.4)(yaml@2.8.0))
-      pino-pretty:
-        specifier: 13.1.1
-        version: 13.1.1
       supertest:
         specifier: 7.1.4
         version: 7.1.4
