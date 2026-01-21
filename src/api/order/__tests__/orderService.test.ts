@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OrderService } from "../orderService";
 import type { IOrderRepository } from "../orderRepository";
 
+// Mock the withTransaction utility
+vi.mock("@/common/utils/withTransaction", () => ({
+	withTransaction: vi.fn((fn) => fn({} as any)),
+}));
+
 describe("importFromCSV", () => {
 	it("should successfully import valid CSV data", async () => {
 		const createMany = vi.fn().mockResolvedValue(undefined);
@@ -33,6 +38,7 @@ describe("importFromCSV", () => {
 				expect.objectContaining({ order_id: 101 }),
 				expect.objectContaining({ order_id: 102 }),
 			]),
+			expect.any(Object), // session
 		);
 	});
 
