@@ -1,13 +1,39 @@
 services:
+  mongo-keyfile-generator:
+    image: alpine:latest
+    container_name: mongo-keyfile-generator
+    volumes:
+      - mongo-keyfile:/keyfile
+    command: >
+      sh -c "
+        if [ ! -f /keyfile/mongo-keyfile ]; then
+          echo 'Generating MongoDB keyfile...';
+          apk add --no-cache openssl;
+          openssl rand -base64 756 > /keyfile/mongo-keyfile;
+          chmod 400 /keyfile/mongo-keyfile;
+          chown 999:999 /keyfile/mongo-keyfile;
+          echo 'Keyfile generated successfully';
+        else
+          echo 'Keyfile already exists, skipping generation';
+        fi
+      "
+
   mongo:
     image: mongo:7.0
     container_name: express-data-integration-mongo
     restart: unless-stopped
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--keyFile", "/data/mongo-keyfile"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-password}
     volumes:
       - mongo-data:/data/db
+      - mongo-keyfile:/data:ro
+    depends_on:
+      mongo-keyfile-generator:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--username", "${MONGODB_USERNAME:-admin}", "--password", "${MONGODB_PASSWORD:-password}", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,7 +47,7 @@ services:
     entrypoint: ["bash", "-c"]
     command:
       - |
-        mongosh --host mongo:27017 <<EOF
+        mongosh --host mongo:27017 --username ${MONGODB_USERNAME:-admin} --password ${MONGODB_PASSWORD:-password} --authenticationDatabase admin <<EOF
         rs.initiate({
           _id: "rs0",
           members: [{ _id: 0, host: "mongo:27017" }]
@@ -41,8 +67,8 @@ services:
       NODE_ENV: development
       HOST: 0.0.0.0
       PORT: ${PORT:-8011}
-      MONGODB_URI: "mongodb://mongo:27017/${MONGODB_DATABASE:-ecommerce-db}?replicaSet=rs0"
-      MONGODB_URI_TEST: "mongodb://mongo:27017/${MONGODB_DATABASE_TEST:-test-db}?replicaSet=rs0"
+      MONGODB_URI: "mongodb://${MONGODB_USERNAME:-admin}:${MONGODB_PASSWORD:-password}@mongo:27017/${MONGODB_DATABASE:-ecommerce-db}?replicaSet=rs0&authSource=admin"
+      MONGODB_URI_TEST: "mongodb://${MONGODB_USERNAME:-admin}:${MONGODB_PASSWORD:-password}@mongo:27017/${MONGODB_DATABASE_TEST:-test-db}?replicaSet=rs0&authSource=admin"
       MONGODB_DATABASE: ${MONGODB_DATABASE:-ecommerce-db}
       MONGODB_DATABASE_TEST: ${MONGODB_DATABASE_TEST:-test-db}
       CORS_ORIGIN: "*"
@@ -51,4 +77,4 @@ services:
 
 volumes:
   mongo-data:
-
+  mongo-keyfile:

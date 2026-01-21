@@ -14,7 +14,6 @@ build
 dist-ssr
 *.local
 .env
-mongo-keyfile
 
 # Editor directories and files
 !.vscode/extensions.json
