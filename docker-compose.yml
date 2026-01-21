@@ -1,0 +1,52 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: express-data-integration-mongo
+    restart: unless-stopped
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo-init-replica:
+    image: mongo:7.0
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        mongosh --host mongo:27017 <<EOF
+        rs.initiate({
+          _id: "rs0",
+          members: [{ _id: 0, host: "mongo:27017" }]
+        })
+        EOF
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: express-data-integration-api
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: ${PORT:-8011}
+      MONGODB_URI: "mongodb://mongo:27017/express-data-integration?replicaSet=rs0"
+      MONGODB_URI_TEST: "mongodb://mongo:27017/express-data-integration-test?replicaSet=rs0"
+      CORS_ORIGIN: "*"
+    ports:
+      - "${PORT:-8011}:${PORT:-8011}"
+
+volumes:
+  mongo-data:
+

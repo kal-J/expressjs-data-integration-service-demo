@@ -1,0 +1,107 @@
+{
+  "info": {
+    "name": "Express Data Integration Service",
+    "_postman_id": "00000000-0000-0000-0000-000000000000",
+    "description": "Postman collection for the Express Data Integration Service APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload Customers CSV",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "samples/customers_sample.csv"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/upload/customers",
+          "host": ["{{baseUrl}}"],
+          "path": ["upload", "customers"]
+        }
+      }
+    },
+    {
+      "name": "Upload Orders CSV",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "samples/orders_sample.csv"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/upload/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["upload", "orders"]
+        }
+      }
+    },
+    {
+      "name": "Get Customer Summary",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/customers/1/summary",
+          "host": ["{{baseUrl}}"],
+          "path": ["customers", "1", "summary"]
+        }
+      }
+    },
+    {
+      "name": "Get Customer Orders Report (all)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/reports/customer-orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["reports", "customer-orders"]
+        }
+      }
+    },
+    {
+      "name": "Get Customer Orders Report (by country & minSpent)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/reports/customer-orders?country=USA&minSpent=500",
+          "host": ["{{baseUrl}}"],
+          "path": ["reports", "customer-orders"],
+          "query": [
+            {
+              "key": "country",
+              "value": "USA"
+            },
+            {
+              "key": "minSpent",
+              "value": "500"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api"
+    }
+  ]
+}
+
